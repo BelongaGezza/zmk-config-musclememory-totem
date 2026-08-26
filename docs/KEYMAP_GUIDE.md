@@ -351,13 +351,18 @@ This config pins ZMK to **v0.3** (`config/west.yml` and `.github/workflows/build
 
 ## Bluetooth pairing
 
+The keyboard advertises as **`BT_Totem_KB`** (set via `CONFIG_ZMK_KEYBOARD_NAME` in `config/totem.conf`, 12 of the 16-character limit). Look for this name on the host device's Bluetooth scan — only the **left** half (central) advertises it.
+
 1. Enter **ADJ** (via NAV or SYM).
 2. Tap **BT Clear** if you need to wipe old pairings.
 3. Tap **BT Next** / **BT Prev** to select a profile slot.
 4. Put the host device in Bluetooth pairing mode.
-5. The keyboard should connect to the selected profile.
+5. Select **`BT_Totem_KB`** from the host's Bluetooth device list.
+6. The keyboard should connect to the selected profile.
 
 Use **OUT TOG** if you need to switch between USB and Bluetooth output.
+
+If you've paired before under a different device name, run **BT Clear** first so the host forgets the stale cached entry, then re-pair.
 
 ---
 
