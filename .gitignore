@@ -1,0 +1,10 @@
+.build
+.direnv
+.west
+modules
+firmware
+zephyr
+zmk
+draw/totem.yaml
+# Local agent handoff — not for the remote fork
+AgentHistory.MD
