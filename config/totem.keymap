@@ -54,25 +54,44 @@
             bindings = <&bootloader>;
         };
 
-        combo_caps_v_esc {
-            // Port of qmk-vial-src-musclememory-cheapino2 v1.6.0: V+Esc ->
-            // Caps Lock. Replaces combo_caps1 (fn+compose) and
-            // combo_sys_left (v+space), both now redundant since SYST is
-            // reached via the FUNC layer's own thumb keys instead (see
-            // func layer below).
+        // Cheapino keymap.c combo set (combos 0-5). Replaces the v1.6.0
+        // combo_caps_v_esc (V+Esc) and combo_symbol_m_bspc (M+Backspace).
+
+        combo_navi {
+            // Cheapino combo 0: Space + Backspace -> one-shot NAVI. NAVI is
+            // no longer on a Backspace hold (the nbs behaviour was removed).
             timeout-ms = <100>;
-            key-positions = <24 33>; // Combo `v + thumb ESC`
-            bindings = <&kp CAPSLOCK>;
+            key-positions = <35 36>; // Combo `thumb Space (right) + thumb Backspace`
+            bindings = <&sl NAVI>;
         };
 
-        combo_symbol_m_bspc {
-            // Port of qmk-vial-src-musclememory-cheapino2 v1.6.0: M+Backspace
-            // -> symbol layer. Replaces combo_symbol (esc+backspace) and
-            // combo_sys_right (m+space), both now redundant for the same
-            // reason as above.
+        combo_sys_left {
+            // Cheapino combo 1: V + Space -> SYST while held
             timeout-ms = <100>;
-            key-positions = <27 36>; // Combo `m + thumb Backspace`
-            bindings = <&to SYMB>;
+            key-positions = <24 34>; // Combo `v + thumb Space (left)`
+            bindings = <&mo SYST>;
+        };
+
+        combo_sys_right {
+            // Cheapino combo 2: M + Space -> SYST while held
+            timeout-ms = <100>;
+            key-positions = <27 35>; // Combo `m + thumb Space (right)`
+            bindings = <&mo SYST>;
+        };
+
+        combo_symbol {
+            // Cheapino combo 3: Esc + Backspace -> toggle SYMB (TG(3))
+            timeout-ms = <100>;
+            key-positions = <33 36>; // Combo `thumb Esc + thumb Backspace`
+            bindings = <&tog SYMB>;
+        };
+
+        combo_caps1 {
+            // Cheapino combos 4/5: FUNC + Compose -> Caps Lock (same
+            // positions on every layer, so one combo covers both)
+            timeout-ms = <100>;
+            key-positions = <32 37>; // Combo `fn + compose`
+            bindings = <&kp CAPSLOCK>;
         };
     };
 
@@ -140,10 +159,12 @@
         };
 
         Compose1ToNumpad: Compose1ToNumpad {
+            // Cheapino TD(0): tap = Compose (K_APP), hold = Compose,
+            // double-tap = toggle NPAD (was &to 2).
             compatible = "zmk,behavior-tap-dance";
             label = "Compose1ToNumpad";
             #binding-cells = <0>;
-            bindings = <&kp K_APP>, <&to 2>;
+            bindings = <&kp K_APP>, <&tog NPAD>;
 
             // Longer window so the second tap still lands despite the ~100ms
             // combo delay on the compose key (combo_caps1, position 37).
@@ -161,18 +182,34 @@
             bindings = <&kp>, <&kp>;
         };
 
-        nbs: nav_backspace {
-            // Thumb key: tap = backspace, hold = NAVI layer, tap-then-hold =
-            // repeat backspace (quick-tap). Split out from hmr2 because that
-            // node's quick-tap-ms (175ms, measured press-to-press) is too
-            // tight for a deliberate tap-then-hold gesture and is shared with
-            // the K/J chordal-hold exception, which must not change.
+        htl: hold_tap_layer {
+            // Cheapino TD(2) building block: tap = go to a layer (&to),
+            // hold = momentary layer (&mo). Used as `&htl MOUS BASE`.
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "tap-preferred";
             tapping-term-ms = <200>;
-            quick-tap-ms = <300>;
-            bindings = <&mo>, <&kp>;
+            bindings = <&mo>, <&to>;
+        };
+
+        hkt: hold_key_tap_layer {
+            // Cheapino TD(1) building block: tap = go to a layer (&to),
+            // hold = key (&kp). Used as `&hkt K_APP BASE`.
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            bindings = <&kp>, <&to>;
+        };
+
+        BaseApp2Numpad: BaseApp2Numpad {
+            // Cheapino TD(1): tap = BASE, hold = Compose (K_APP),
+            // double-tap = toggle NPAD. Right outer thumb on non-base layers.
+            compatible = "zmk,behavior-tap-dance";
+            label = "BaseApp2Numpad";
+            #binding-cells = <0>;
+            tapping-term-ms = <350>;
+            bindings = <&hkt K_APP BASE>, <&tog NPAD>;
         };
     };
 
@@ -185,7 +222,7 @@
                  &kp Q          &kp W             &kp E      &kp R         &kp T              &kp Y            &kp U              &kp I              &kp O             &kp P
                  &hml LSHIFT A  &hml RIGHT_ALT S  &hml2 1 D  &hml LCTRL F  &hml LEFT_ALT G    &hmr LEFT_ALT H  &hmr RCTRL J       &hmr2 1 K          &hmr RIGHT_ALT L  &hmr RSHIFT SEMICOLON
 &hml LSHIFT TAB  &kp Z          &kp X             &kp C      &hml RGUI V   &kp B              &kp N            &hmr RGUI M        &kp COMMA          &kp DOT           &kp SLASH              &hmr RSHFT ENTER
-                                                  &sl 3      &lt 5 ESC     &hmr LGUI SPACE    &hmr LGUI ENTER  &nbs 4 BACKSPACE  &Compose1ToNumpad
+                                                  &sl 3      &lt 5 ESC     &hmr LGUI SPACE    &hmr LGUI SPACE  &kp BACKSPACE     &Compose1ToNumpad
             >;
         };
 
@@ -195,7 +232,7 @@
         &kp NUMBER_1       &kp NUMBER_2        &kp NUMBER_3    &kp NUMBER_4            &kp N5                     &kp NUMBER_6        &kp N7                  &kp N8      &kp N9                &kp N0
         &hml LSHFT ESCAPE  &hml RIGHT_ALT INS  &hml2 2 DELETE  &hml LCTRL TAB          &hml LEFT_ALT BACKSPACE    &hmr LEFT_ALT LEFT  &hmr RCTRL DOWN         &hmr2 2 UP  &hmr RIGHT_ALT RIGHT  &hmr RSHFT ENTER
 &trans  &kp GRAVE          &kp MINUS           &kp EQUAL       &hml RGUI LEFT_BRACKET  &kp RIGHT_BRACKET          &kp BACKSLASH       &hmr RGUI SINGLE_QUOTE  &kp COMMA   &kp PERIOD            &kp SLASH         &trans
-                                               &trans          &to 0                   &trans                     &trans              &trans                  &to 0
+                                               &trans          &htl MOUS BASE          &trans                     &trans              &trans                  &BaseApp2Numpad
             >;
         };
 
@@ -205,7 +242,7 @@
         &trans  &trans  &trans  &trans  &trans    &npo KP_DIVIDE KP_SUBTRACT  &kp KP_NUMBER_7         &kp KP_NUMBER_8      &kp KP_NUMBER_9             &npo KP_EQUAL KP_N0
         &trans  &trans  &trans  &trans  &trans    &hmr LEFT_ALT KP_NUMLOCK    &hmr RCTRL KP_NUMBER_4  &hmr2 1 KP_NUMBER_5  &hmr RIGHT_ALT KP_NUMBER_6  &hmr RSHIFT KP_ENTER
 &trans  &trans  &trans  &trans  &trans  &trans    &npo KP_MULTIPLY KP_PLUS    &hmr RGUI KP_NUMBER_1   &kp KP_NUMBER_2      &kp KP_NUMBER_3             &npo KP_COMMA KP_DOT    &trans
-                                &trans  &to 0     &trans    &trans  &trans  &to 0
+                                &trans  &htl MOUS BASE  &trans    &trans  &trans  &BaseApp2Numpad
             >;
         };
 
@@ -215,17 +252,17 @@
         &kp F1           &kp F2              &kp F3   &kp F4          &kp F5               &kp F6             &kp F7          &kp F8   &kp F9              &kp F10
         &hml LSHIFT F11  &hml RIGHT_ALT F12  &kp F13  &hml LCTRL F14  &hml LEFT_ALT F15    &hmr LEFT_ALT F16  &hmr RCTRL F17  &kp F18  &hmr RIGHT_ALT F19  &hmr RSHIFT F20
 &trans  &kp F21          &kp F22             &kp F23  &hml RGUI F24   &none                &none              &kp RGUI        &none    &none               &mo SYST         &trans
-                                             &trans   &mo SYST        &trans               &trans             &mo SYST        &trans
+                                             &trans   &htl MOUS BASE  &trans               &trans             &trans          &BaseApp2Numpad
             >;
         };
 
         navigation {
             label = "NAVI";
             bindings = <
-        &none       &none    &none    &none    &none            &kp HOME  &kp INS        &kp DEL    &kp END    &kp BACKSPACE
+        &none       &none    &none    &none    &none            &kp HOME  &kp DEL        &kp INS    &kp END    &kp BACKSPACE
         &kp ESCAPE  &kp INS  &kp DEL  &kp TAB  &kp BACKSPACE    &kp LEFT  &kp DOWN       &kp UP     &kp RIGHT  &kp ENTER
 &trans  &none       &none    &none    &none    &none            &none     &kp PAGE_DOWN  &kp PG_UP  &none      &none          &trans
-                             &trans   &trans   &trans           &trans    &trans         &trans
+                             &trans   &htl MOUS BASE  &trans    &trans    &trans         &BaseApp2Numpad
             >;
         };
 
@@ -235,7 +272,7 @@
         &none     &none      &none      &none      &none       &none           &none           &none         &none            &none
         &mkp MB4  &mkp LCLK  &mkp MCLK  &mkp RCLK  &mkp MB5    &mmv MOVE_LEFT  &mmv MOVE_DOWN  &mmv MOVE_UP  &mmv MOVE_RIGHT  &mkp LCLK
 &trans  &none     &none      &none      &none      &none       &msc SCRL_LEFT  &msc SCRL_DOWN  &msc SCRL_UP  &msc SCRL_RIGHT  &none      &trans
-                             &trans     &trans     &trans      &trans          &trans          &trans
+                             &trans     &htl MOUS BASE  &trans      &trans          &trans          &BaseApp2Numpad
             >;
         };
 
@@ -245,7 +282,7 @@
         &bootloader   &none         &none         &none         &bt BT_CLR_ALL  &sys_reset        &kp C_BRIGHTNESS_DEC  &kp C_BRIGHTNESS_INC  &none  &none
         &sys_reset    &none         &out OUT_USB  &out OUT_BLE  &bt BT_CLR      &kp C_MUTE        &kp C_VOL_DN          &kp C_VOL_UP          &none  &none
   &none &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4    &kp K_PLAY_PAUSE  &kp K_PREV            &kp C_NEXT            &none  &none  &none
-                                             &trans        &trans        &trans          &trans            &trans                &trans
+                                             &trans        &htl MOUS BASE  &trans        &trans            &trans                &BaseApp2Numpad
             >;
         };
 
